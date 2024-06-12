@@ -20,6 +20,7 @@ class Position:
 
 class LayoutElement:
     """Base class of a layout element."""
+
     def __init__(self, size: Size):
         self.size = size
         self.position: Position = Position(0, 0, 0)
@@ -32,6 +33,7 @@ class LayoutElement:
 
 class RowAligner(ABC):
     """Aligns elements in a row."""
+
     @abstractmethod
     def align_elements(self, row: 'Row'):
         """Align elements in a row."""
@@ -40,6 +42,7 @@ class RowAligner(ABC):
 
 class AlignCenterRow(RowAligner):
     """Aligns Row elements to the center."""
+
     def align_elements(self, row: 'Row'):
         """Aligns all the elements in the row to the middle."""
         left = -row.half_width
@@ -56,6 +59,7 @@ class ElementLoadingError(Exception):
 
 class ElementLoader(ABC):
     """Loads elements in a layout."""
+
     @abstractmethod
     def load_elements(self, layout: 'Layout', elements: List[LayoutElement]):
         """Loads elements into rows.
@@ -68,6 +72,7 @@ class ElementLoader(ABC):
 
 class LimitedRowWidthLoader(ElementLoader):
     """Loads elements into rows with a fixed maximum width."""
+
     def load_elements(self, layout: 'Layout', elements: List[LayoutElement]):
         """Loads elements into rows with a limited width."""
         for element in elements:
@@ -82,6 +87,7 @@ class LimitedRowWidthLoader(ElementLoader):
 
 class RowStacker(ABC):
     """Stack elements in a layout."""
+
     @abstractmethod
     def stack(self, layout: 'Layout', spacing_factor: float, start_factor: float):
         """Stacks rows in a layout."""
@@ -98,18 +104,19 @@ class VerticalRowStacker(RowStacker):
 
 class Row(LayoutElement):
     """Represents a row element that contains layout elements."""
+
     def __init__(self):
         super().__init__(Size(0, 0))
         self.elements: List[LayoutElement] = []
+
+    def _increase_width_by(self, width: float):
+        """Updates the current width taken by all the elements."""
+        self.size.width += width
 
     def add_element(self, element: LayoutElement):
         """Adds a layout elements to the row and updates the width."""
         self.elements.append(element)
         self._increase_width_by(element.size.width)
-
-    def _increase_width_by(self, width: float):
-        """Updates the current width taken by all the elements."""
-        self.size.width += width
 
     def align_elements(self, aligner: RowAligner):
         """Aligns all the elements in the row to the middle."""
@@ -118,6 +125,7 @@ class Row(LayoutElement):
 
 class Layout:
     """Handles how the elements are loaded into the rows and their position."""
+
     def __init__(
             self,
             content: List[LayoutElement],
@@ -133,6 +141,11 @@ class Layout:
         self._row_aligner = row_aligner
         self._rows_stacker = rows_stacker
 
+    def align_rows_content(self):
+        """Aligns the elements in a row based on a RowAligner"""
+        for row in self.rows:
+            row.align_elements(self._row_aligner)
+
     def load_elements(self, elements: List[LayoutElement]):
         """Load elements into rows."""
         self._loader.load_elements(self, elements)
@@ -140,8 +153,3 @@ class Layout:
     def stack_rows(self, start_factor: float, spacing_factor: float):
         """Stacks rows based on a given RowStacker"""
         self._rows_stacker.stack(self, start_factor, spacing_factor)
-
-    def align_rows_content(self):
-        """Aligns the elements in a row based on a RowAligner"""
-        for row in self.rows:
-            row.align_elements(self._row_aligner)
