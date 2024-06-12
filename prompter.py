@@ -24,6 +24,7 @@ class LayoutElement:
         self.size = size
         self.position: Position = Position(0, 0, 0)
 
+    @property
     def half_width(self) -> float:
         """Returns half the width of a layout element."""
         return self.size.width / 2
@@ -41,10 +42,10 @@ class AlignCenterRow(RowAligner):
     """Aligns Row elements to the center."""
     def align_elements(self, row: 'Row'):
         """Aligns all the elements in the row to the middle."""
-        left = -(row.half_width())
+        left = -row.half_width
 
         for element in row.elements:
-            element.position.x = left + element.half_width()
+            element.position.x = left + element.half_width
             element.position.y = row.position.y
             left += element.size.width
 
@@ -88,7 +89,7 @@ class RowStacker(ABC):
 
 
 class VerticalRowStacker(RowStacker):
-    def stack(self, layout: 'Layout', start_factor, spacing_factor):
+    def stack(self, layout: 'Layout', start_factor: float, spacing_factor: float):
         """Stacks the rows in the layout in a vertical order"""
         for i, row in enumerate(layout.rows):
             # Calculating the position using a linear rate y = mx + b
@@ -104,11 +105,11 @@ class Row(LayoutElement):
     def add_element(self, element: LayoutElement):
         """Adds a layout elements to the row and updates the width."""
         self.elements.append(element)
-        self._update_size()
+        self._increase_width_by(element.size.width)
 
-    def _update_size(self):
+    def _increase_width_by(self, width: float):
         """Updates the current width taken by all the elements."""
-        self.size.width = sum(element.size.width for element in self.elements)
+        self.size.width += width
 
     def align_elements(self, aligner: RowAligner):
         """Aligns all the elements in the row to the middle."""
@@ -126,11 +127,11 @@ class Layout:
             row_aligner: RowAligner
     ):
         self.size = size
-        self._content = content
-        self.rows: List[Row] = [Row()]
+        self.rows: List[Row] = [Row()] if content else []
         self._loader = loader
-        self._rows_stacker = rows_stacker
+        self._content = content
         self._row_aligner = row_aligner
+        self._rows_stacker = rows_stacker
 
     def load_elements(self, elements: List[LayoutElement]):
         """Load elements into rows."""
