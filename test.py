@@ -1,5 +1,5 @@
 import unittest
-from prompter import Size, PrompterLayoutManager, LayoutElement, Position
+from prompter import Size, Layout, LayoutElement, Position, LimitedRowWidthLoader, VerticalRowStacker, AlignCenterRow
 
 
 class TestRowContent(LayoutElement):
@@ -14,7 +14,12 @@ class TestPrompterLayout(unittest.TestCase):
         content2 = TestRowContent(size=Size(1, 3.0))
         content3 = TestRowContent(size=Size(1, 8.0))
         self.row_content = [content1, content2, content3]
-        self.layout = PrompterLayoutManager(self.row_content, self.dimensions)
+        self.layout = Layout(self.row_content, self.dimensions, LimitedRowWidthLoader(),
+                             VerticalRowStacker(), AlignCenterRow())
+
+        self.layout.load_elements(self.row_content)
+        self.layout.stack_rows(0.25, 0.5)
+        self.layout.align_rows_content()
 
     def test_build_rows(self):
         self.assertEqual(1, len(self.layout.rows))  # Expect 1 row based on content
