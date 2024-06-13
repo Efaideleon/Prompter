@@ -54,6 +54,10 @@ class AlignCenterRow(RowAligner):
 
 
 class ElementLoadingError(Exception):
+    """Raised when an element can be loaded into a layout.
+
+    This typically occurs when the element exceeds the layout's width.
+    """
     pass
 
 
